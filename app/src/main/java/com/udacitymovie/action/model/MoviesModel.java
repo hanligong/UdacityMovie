@@ -1,5 +1,8 @@
 package com.udacitymovie.action.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.bluelinelabs.logansquare.annotation.JsonField;
 import com.bluelinelabs.logansquare.annotation.JsonObject;
 
@@ -7,7 +10,7 @@ import com.bluelinelabs.logansquare.annotation.JsonObject;
  * Created by hanyuezi on 17/10/15.
  */
 @JsonObject
-public class MoviesModel {
+public class MoviesModel implements Parcelable{
 //    "vote_count":2090,"id":346364,"video":false,"vote_average":7.4,"title":"It","popularity":771.460898,"poster_path":"\/9E2y5Q7WlCVNEhP5GiVTjhEhx1o.jpg",
 //            "original_language":"en","original_title":"It","genre_ids":[12,18,27],"backdrop_path":"\/tcheoA2nPATCm2vvXw2hVQoaEFD.jpg","adult":false,
 //            "overview":"In a small town in Maine, seven children known as The Losers Club come face to face with life problems, bullies and a monster that takes the shape of a clown called Pennywise.",
@@ -152,4 +155,60 @@ public class MoviesModel {
     public void setRelease_date(String release_date) {
         this.release_date = release_date;
     }
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(this.vote_count);
+        dest.writeInt(this.id);
+        dest.writeByte(this.video ? (byte) 1 : (byte) 0);
+        dest.writeDouble(this.vote_average);
+        dest.writeString(this.title);
+        dest.writeDouble(this.popularity);
+        dest.writeString(this.poster_path);
+        dest.writeString(this.original_language);
+        dest.writeString(this.original_title);
+        dest.writeString(this.genre_ids);
+        dest.writeString(this.backdrop_path);
+        dest.writeByte(this.adult ? (byte) 1 : (byte) 0);
+        dest.writeString(this.overview);
+        dest.writeString(this.release_date);
+    }
+
+    public MoviesModel() {
+    }
+
+    protected MoviesModel(Parcel in) {
+        this.vote_count = in.readInt();
+        this.id = in.readInt();
+        this.video = in.readByte() != 0;
+        this.vote_average = in.readDouble();
+        this.title = in.readString();
+        this.popularity = in.readDouble();
+        this.poster_path = in.readString();
+        this.original_language = in.readString();
+        this.original_title = in.readString();
+        this.genre_ids = in.readString();
+        this.backdrop_path = in.readString();
+        this.adult = in.readByte() != 0;
+        this.overview = in.readString();
+        this.release_date = in.readString();
+    }
+
+    public static final Creator<MoviesModel> CREATOR = new Creator<MoviesModel>() {
+        @Override
+        public MoviesModel createFromParcel(Parcel source) {
+            return new MoviesModel(source);
+        }
+
+        @Override
+        public MoviesModel[] newArray(int size) {
+            return new MoviesModel[size];
+        }
+    };
 }

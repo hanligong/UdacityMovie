@@ -20,7 +20,9 @@ public class NetworkUtils {
 
     public static String IMG_BASE_URL = "http://image.tmdb.org/t/p/w185//";
     //电影列表base url
-    public static final String MOVIES_BASE_URL = "http://api.themoviedb.org/3/movie/popular?api_key=";
+    public static final String MOVIES_POP_BASE_URL = "http://api.themoviedb.org/3/movie/popular?api_key=";
+
+    public static final String MOVIES_RATE_BASE_URL = "http://api.themoviedb.org/3/movie/top_rated?api_key=";
 
     private static String getApiKey(Activity activity){
         String apiKey = "";
@@ -45,7 +47,7 @@ public class NetworkUtils {
      */
     public static URL buildUrl(Activity activity, String baseUrl) {
         // COMPLETED (1) Fix this method to return the URL used to query Open Weather Map's API
-        Uri builtUri = Uri.parse(MOVIES_BASE_URL + getApiKey(activity)).buildUpon()
+        Uri builtUri = Uri.parse(baseUrl + getApiKey(activity)).buildUpon()
                 .build();
         URL url = null;
         try {
@@ -66,6 +68,7 @@ public class NetworkUtils {
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         Log.e("", "getResponseFromHttpUrl......................" + url);
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setConnectTimeout(30000);
         try {
             InputStream in = urlConnection.getInputStream();
 

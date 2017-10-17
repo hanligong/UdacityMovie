@@ -64,18 +64,16 @@ public class MainFragment extends Fragment{
 
         mTvError = (TextView) view.findViewById(R.id.tv_main_error);
 
-        new MovieTask().execute(NetworkUtils.MOVIES_BASE_URL);
+        new MovieTask().execute(NetworkUtils.MOVIES_POP_BASE_URL);
         return view;
     }
 
     public void updateDataByPop(){
-        Util.sortMoviesByPop(list);
-        adapter.notifyDataSetChanged();
+        new MovieTask().execute(NetworkUtils.MOVIES_POP_BASE_URL);
     }
 
     public void updateDataByVoteAverage(){
-        Util.sortMoviesByVoteAverage(list);
-        adapter.notifyDataSetChanged();
+        new MovieTask().execute(NetworkUtils.MOVIES_RATE_BASE_URL);
     }
 
     class MovieTask extends AsyncTask<String, Void, List<MoviesModel>> {
@@ -91,15 +89,15 @@ public class MainFragment extends Fragment{
             Log.e("", "MainActivity url.................." +url);
             try {
                 String response = NetworkUtils.getResponseFromHttpUrl(url);
-                List<MoviesModel> Arrlist = new ArrayList<>();
+                List<MoviesModel> arrayList = new ArrayList<>();
                 try {
                     HttpObject httpObject = LoganSquare.parse(response, HttpObject.class);
-                    Arrlist = httpObject.getResults();
+                    arrayList = httpObject.getResults();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 Log.e("", "MainActivity.................." +response);
-                return Arrlist;
+                return arrayList;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -141,12 +139,9 @@ public class MainFragment extends Fragment{
                 public void onClick(View view) {
                     //跳转详情页
                     Intent intent = new Intent(activity, MovieDetailActivity.class);
-                    intent.putExtra(MovieDetailActivity.EXTRA_NAME, list.get(position).getTitle());
-                    intent.putExtra(MovieDetailActivity.EXTRA_IMG_URL, NetworkUtils.IMG_BASE_URL + list.get(position).getPoster_path());
-                    intent.putExtra(MovieDetailActivity.EXTRA_DATE, list.get(position).getRelease_date());
-                    intent.putExtra(MovieDetailActivity.EXTRA_DESC, list.get(position).getOverview());
-                    intent.putExtra(MovieDetailActivity.EXTRA_POP, list.get(position).getVote_average() + "");
-                    intent.putExtra(MovieDetailActivity.EXTRA_LANGUAGE, list.get(position).getPopularity() + "");
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelable("MovieModel", list.get(position));
+                    intent.putExtras(bundle);
                     startActivity(intent);
                 }
             });

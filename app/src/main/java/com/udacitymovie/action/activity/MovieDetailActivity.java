@@ -9,22 +9,37 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import com.udacitymovie.action.R;
+import com.udacitymovie.action.model.MoviesModel;
+import com.udacitymovie.action.uitls.NetworkUtils;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Created by hanyuezi on 17/10/15.
  */
 public class MovieDetailActivity extends BaseActivity{
-    public static String EXTRA_NAME = "name";
-    public static String EXTRA_IMG_URL = "imgUrl";
-    public static String EXTRA_DATE = "date";
-    public static String EXTRA_DESC = "desc";
-    public static String EXTRA_POP = "pop";
-    public static String EXTRA_LANGUAGE = "language";
+
+    private MoviesModel moviesModel;
+
+    @BindView(R.id.tv_detail_username)
+    TextView mTvName;
+    @BindView(R.id.iv_detail_post)
+    ImageView mIvPost;
+    @BindView(R.id.tv_detail_desc)
+    TextView mTvDesc;
+    @BindView(R.id.tv_detail_date)
+    TextView mTvDate;
+    @BindView(R.id.tv_detail_pop)
+    TextView mTvDop;
+    @BindView(R.id.tv_detail_language)
+    TextView mTvLanguage;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        ButterKnife.bind(this);
 
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         if(actionBar != null){
@@ -34,30 +49,15 @@ public class MovieDetailActivity extends BaseActivity{
         }
 
         Intent intent = getIntent();
-        String name = intent.getStringExtra(EXTRA_NAME);
-        String postUrl = intent.getStringExtra(EXTRA_IMG_URL);
-        String desc = intent.getStringExtra(EXTRA_DESC);
-        String date = intent.getStringExtra(EXTRA_DATE);
-        String pop = intent.getStringExtra(EXTRA_POP);
-        String language = intent.getStringExtra(EXTRA_LANGUAGE);
+        Bundle bundle = intent.getExtras();
+        moviesModel = bundle.getParcelable("MovieModel");
 
-        TextView mTvName = (TextView) findViewById(R.id.tv_detail_username);
-        mTvName.setText(name);
-
-        ImageView mIvPost = (ImageView) findViewById(R.id.iv_detail_post);
-        Picasso.with(this).load(postUrl).into(mIvPost);
-
-        TextView mTvDesc = (TextView) findViewById(R.id.tv_detail_desc);
-        mTvDesc.setText(desc);
-
-        TextView mTvDate = (TextView) findViewById(R.id.tv_detail_date);
-        mTvDate.setText(date);
-
-        TextView mTvDop = (TextView) findViewById(R.id.tv_detail_pop);
-        mTvDop.setText(pop);
-
-        TextView mTvLanguage = (TextView) findViewById(R.id.tv_detail_language);
-        mTvLanguage.setText(language);
+        mTvName.setText(moviesModel.getTitle());
+        Picasso.with(this).load(NetworkUtils.IMG_BASE_URL + moviesModel.getPoster_path()).into(mIvPost);
+        mTvDesc.setText(moviesModel.getOverview());
+        mTvDate.setText(moviesModel.getRelease_date());
+        mTvDop.setText(moviesModel.getPopularity() + "");
+        mTvLanguage.setText(moviesModel.getVote_average() + "");
     }
 
     @Override
