@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.PublicKey;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -19,10 +20,9 @@ import java.util.Scanner;
 public class NetworkUtils {
 
     public static String IMG_BASE_URL = "http://image.tmdb.org/t/p/w185//";
-    //电影列表base url
-    public static final String MOVIES_POP_BASE_URL = "http://api.themoviedb.org/3/movie/popular?api_key=";
 
-    public static final String MOVIES_RATE_BASE_URL = "http://api.themoviedb.org/3/movie/top_rated?api_key=";
+    //电影列表base url
+    public static final String MOVIE_BASE_URL = "http://api.themoviedb.org/3/movie/";
 
     private static String getApiKey(Activity activity){
         String apiKey = "";
@@ -42,13 +42,28 @@ public class NetworkUtils {
      * Builds the URL used to talk to the weather server using a location. This location is based
      * on the query capabilities of the weather provider that we are using.
      *
-     * @param locationQuery The location that will be queried for.
+     * @param activity The location that will be queried for.
      * @return The URL to use to query the weather server.
      */
     public static URL buildUrl(Activity activity, String baseUrl) {
         // COMPLETED (1) Fix this method to return the URL used to query Open Weather Map's API
         Uri builtUri = Uri.parse(baseUrl + getApiKey(activity)).buildUpon()
                 .build();
+        Log.e("NetworkUtils buildUrl", builtUri.toString());
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return url;
+    }
+
+    public static URL buildUrl(Activity activity, String baseUrl, String param2) {
+        // COMPLETED (1) Fix this method to return the URL used to query Open Weather Map's API
+        Uri builtUri = Uri.parse(baseUrl + getApiKey(activity) + param2).buildUpon()
+                .build();
+        Log.e("NetworkUtils buildUrl", builtUri.toString());
         URL url = null;
         try {
             url = new URL(builtUri.toString());

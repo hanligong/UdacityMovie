@@ -21,6 +21,10 @@
         </activity>
 
         <activity android:name=".activity.MovieDetailActivity" />
+
+        <provider
+            android:authorities="com.udacitymovie.action"
+            android:name=".contentProvider.MovieContentProvider" />
     </application>
 
 </manifest>

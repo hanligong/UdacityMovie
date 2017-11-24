@@ -44,6 +44,9 @@ public class MainActivity extends BaseActivity {
             case R.id.menu_score:
                 fragment.updateDataByVoteAverage();
                 break;
+            case R.id.menu_favorite:
+                fragment.updateDataByFavorite();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

@@ -1,24 +1,52 @@
 package com.udacitymovie.action.activity;
 
+import android.content.ContentProvider;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.bluelinelabs.logansquare.LoganSquare;
 import com.squareup.picasso.Picasso;
 import com.udacitymovie.action.R;
+import com.udacitymovie.action.contentProvider.MovieContract;
+import com.udacitymovie.action.inter.MovieHttpResponseInterface;
+import com.udacitymovie.action.inter.MovieTrailerResponseInterface;
 import com.udacitymovie.action.model.MoviesModel;
+import com.udacitymovie.action.model.TrailerModel;
+import com.udacitymovie.action.model.VideoModel;
+import com.udacitymovie.action.response.TrailerObject;
+import com.udacitymovie.action.response.VideoObject;
 import com.udacitymovie.action.uitls.NetworkUtils;
+import com.udacitymovie.action.uitls.OkHttpUtils;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Created by hanyuezi on 17/10/15.
  */
-public class MovieDetailActivity extends BaseActivity{
+public class MovieDetailActivity extends BaseActivity implements MovieHttpResponseInterface, MovieTrailerResponseInterface {
 
     private MoviesModel moviesModel;
 
@@ -34,6 +62,33 @@ public class MovieDetailActivity extends BaseActivity{
     TextView mTvDop;
     @BindView(R.id.tv_detail_language)
     TextView mTvLanguage;
+
+    @BindView(R.id.detailRv)
+    RecyclerView mRv;
+
+    private TrailerAdapter mTrailerAdapter;
+    private List<VideoModel> list;
+
+    private String trailerUrl;
+
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 2:
+                    List<VideoModel> videoModels = (List<VideoModel>) msg.obj;
+                    if (videoModels == null || videoModels.isEmpty()) {
+                        return;
+                    }
+                    list.clear();
+                    list.addAll(videoModels);
+                    mTrailerAdapter.notifyDataSetChanged();
+                    break;
+            }
+        }
+    };
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -58,6 +113,42 @@ public class MovieDetailActivity extends BaseActivity{
         mTvDate.setText(moviesModel.getRelease_date());
         mTvDop.setText(moviesModel.getPopularity() + "");
         mTvLanguage.setText(moviesModel.getVote_average() + "");
+
+        list = new ArrayList();
+        mRv.setLayoutManager(new GridLayoutManager(this, 1));
+        mRv.setItemAnimator(new DefaultItemAnimator());
+        mTrailerAdapter = new TrailerAdapter();
+        mRv.setAdapter(mTrailerAdapter);
+
+
+        //TODO 请求接口
+        // https://api.themoviedb.org/3/movie/{movie_id}/videos?api_key=<<api_key>>&language=en-US
+        // https://api.themoviedb.org/3/movie/{movie_id}/reviews?api_key=<<api_key>>&language=en-US&page=1
+        OkHttpUtils.requestHttp(this, NetworkUtils.MOVIE_BASE_URL + moviesModel.getId() + "/videos?api_key=", this);
+
+        OkHttpUtils.requestHttp(MovieDetailActivity.this, NetworkUtils.MOVIE_BASE_URL + moviesModel.getId() + "/reviews?api_key=", "&page=1", MovieDetailActivity.this);
+    }
+
+    @OnClick(R.id.detailMarkIv)
+    void clickMark(){
+        List<ContentValues> values = new ArrayList<ContentValues>();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MovieContract.MovieEntry.COLUMN_VOTE_COUNT, moviesModel.getVote_count());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_VIDEO, moviesModel.isVideo());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE, moviesModel.getVote_average());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_TITLE, moviesModel.getTitle());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_POPULARITY, moviesModel.getPopularity());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_POSTER_PATH, moviesModel.getPoster_path());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, moviesModel.getOriginal_language());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE, moviesModel.getOriginal_title());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_GENRE_IDS, moviesModel.getGenre_ids());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_BACKDROP_PATH, moviesModel.getBackdrop_path());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_ADULT, moviesModel.isAdult());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, moviesModel.getOverview());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, moviesModel.getRelease_date());
+        values.add(contentValues);
+        int c = getContentResolver().bulkInsert(MovieContract.MovieEntry.getContentUri(), values.toArray(new ContentValues[1]));
+        Log.e("MovieDetailActivity", c + "");
     }
 
     @Override
@@ -73,5 +164,92 @@ public class MovieDetailActivity extends BaseActivity{
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void getTrailerUrl(String response) {
+        if (TextUtils.isEmpty(response)) {
+            return;
+        }
+        TrailerObject httpObject;
+        try {
+            httpObject = LoganSquare.parse(response, TrailerObject.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        List<TrailerModel> trailerModel = httpObject.getResults();
+        if (null == trailerModel || trailerModel.isEmpty()) {
+            return;
+        }
+
+        trailerUrl = trailerModel.get(0).getUrl();
+    }
+
+    @Override
+    public void showData(String response) {
+        if (TextUtils.isEmpty(response)) {
+            return;
+        }
+        List<VideoModel> videoModels;
+        VideoObject httpObject;
+        try {
+            httpObject = LoganSquare.parse(response, VideoObject.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        videoModels = httpObject.getResults();
+        Message message = new Message();
+        message.what = 2;
+        message.obj = videoModels;
+        handler.sendMessage(message);
+    }
+
+    class TrailerAdapter extends RecyclerView.Adapter<MovieDetailItemHolder>{
+
+        @Override
+        public MovieDetailItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = getLayoutInflater().inflate(R.layout.activity_detail_item, null);
+            return new MovieDetailItemHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(MovieDetailItemHolder holder, final int position) {
+            holder.mTitleTv.setText("Trailer" + (position + 1));
+            holder.mCl.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.d("", NetworkUtils.MOVIE_BASE_URL + moviesModel.getId() + "/reviews?api_key=");
+                    if (TextUtils.isEmpty(trailerUrl)) {
+                        return;
+                    }
+                    Intent intent= new Intent();
+                    intent.setAction("android.intent.action.VIEW");
+                    Uri content_url = Uri.parse(trailerUrl);
+                    intent.setData(content_url);
+                    startActivity(intent);
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            if (null == list || list.isEmpty()) {
+                return 0;
+            }
+            return list.size();
+        }
+    }
+
+    class MovieDetailItemHolder extends RecyclerView.ViewHolder{
+        private TextView mTitleTv;
+        private ConstraintLayout mCl;
+
+        public MovieDetailItemHolder(View itemView) {
+            super(itemView);
+            mTitleTv = itemView.findViewById(R.id.detailTitleTv);
+            mCl = itemView.findViewById(R.id.detailItemCl);
+        }
     }
 }

@@ -15,7 +15,7 @@
             android:layout_height="120dp"
             android:background="@color/colorBlue"
             android:gravity="center_vertical"
-            android:paddingLeft="30dp"
+            android:paddingLeft="20dp"
             android:textColor="@color/colorWhite"
             android:textSize="30sp"/>
 
@@ -24,7 +24,7 @@
             android:layout_width="140dp"
             android:layout_height="200dp"
             android:layout_below="@+id/tv_detail_username"
-            android:layout_marginLeft="30dp"
+            android:layout_marginLeft="20dp"
             android:layout_marginTop="6dp"
             android:scaleType="fitXY"/>
 
@@ -38,13 +38,23 @@
             android:layout_toRightOf="@+id/iv_detail_post"
             android:text="上映日期"/>
 
+        <ImageView
+            android:id="@+id/detailMarkIv"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@mipmap/star"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/tv_detail_username"/>
+
         <TextView
             android:id="@+id/tv_detail_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tv_detail_dateTitle"
             android:layout_marginLeft="15dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="8dp"
             android:layout_toRightOf="@+id/iv_detail_post"/>
 
         <TextView
@@ -53,7 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/tv_detail_date"
             android:layout_marginLeft="15dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="14dp"
             android:layout_toRightOf="@+id/iv_detail_post"
             android:text="综合评分"/>
 
@@ -63,7 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/tv_detail_date"
             android:layout_below="@+id/tv_detail_popTitle"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="8dp"/>
 
         <TextView
             android:id="@+id/tv_detail_languageTitle"
@@ -71,7 +81,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/tv_detail_pop"
             android:layout_marginLeft="15dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="14dp"
             android:layout_toRightOf="@+id/iv_detail_post"
             android:text="热门"/>
 
@@ -81,25 +91,42 @@
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/tv_detail_date"
             android:layout_below="@+id/tv_detail_languageTitle"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="8dp"/>
 
         <TextView
             android:id="@+id/tv_detail_desc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/iv_detail_post"
-            android:layout_marginLeft="30dp"
+            android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:layout_marginTop="20dp"/>
 
         <View
+            android:id="@+id/detailLine"
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:layout_below="@+id/tv_detail_desc"
-            android:layout_marginLeft="30dp"
+            android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
             android:layout_marginTop="6dp"
             android:background="@color/colorGray"/>
+
+        <TextView
+            android:id="@+id/detailTrailerTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/detailLine"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:text="Trailers"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/detailRv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/detailTrailerTitle"
+            android:layout_marginTop="10dp"/>
 
     </RelativeLayout>
 </ScrollView>

@@ -38,4 +38,8 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.8.1'
     apt 'com.jakewharton:butterknife-compiler:8.8.1'
     compile 'com.jakewharton.rxbinding:rxbinding:1.0.1'
+
+    compile 'com.facebook.stetho:stetho:1.5.0'
+
+    compile 'com.squareup.okhttp3:okhttp:3.9.1'
 }
