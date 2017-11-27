@@ -46,6 +46,18 @@
             android:layout_alignParentRight="true"
             android:layout_marginRight="10dp"
             android:layout_marginTop="10dp"
+            android:visibility="gone"
+            android:layout_below="@+id/tv_detail_username"/>
+
+        <TextView
+            android:id="@+id/detailMarkTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:text="取消"
+            android:visibility="gone"
             android:layout_below="@+id/tv_detail_username"/>
 
         <TextView
@@ -113,20 +125,41 @@
             android:background="@color/colorGray"/>
 
         <TextView
-            android:id="@+id/detailTrailerTitle"
+            android:id="@+id/detailVedioTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/detailLine"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="10dp"
-            android:text="Trailers"/>
+            android:textSize="18sp"
+            android:text="Videos"/>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/detailRv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/detailTrailerTitle"
+            android:layout_below="@+id/detailVedioTitle"
             android:layout_marginTop="10dp"/>
+
+        <TextView
+            android:id="@+id/detailTrailerTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/detailRv"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:textSize="18sp"
+            android:text="Trailers"/>
+
+        <TextView
+            android:id="@+id/trailerTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/detailTrailerTitle"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="20dp"/>
 
     </RelativeLayout>
 </ScrollView>

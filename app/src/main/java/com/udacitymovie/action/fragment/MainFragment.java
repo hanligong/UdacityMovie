@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -33,6 +34,7 @@ import com.udacitymovie.action.model.MoviesModel;
 import com.udacitymovie.action.response.MovieObject;
 import com.udacitymovie.action.uitls.NetworkUtils;
 import com.udacitymovie.action.uitls.OkHttpUtils;
+import com.udacitymovie.action.uitls.SharePreferenceUtils;
 import com.udacitymovie.action.uitls.Util;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -85,17 +87,46 @@ public class MainFragment extends Fragment implements MovieHttpResponseInterface
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         list = new ArrayList<>();
 
+        mTvError = view.findViewById(R.id.tv_main_error);
+
+        if (null != savedInstanceState) {
+            list = savedInstanceState.getParcelableArrayList("movie");
+        }
+
         mRv = view.findViewById(R.id.rv_main);
         mRv.setLayoutManager(new GridLayoutManager(activity, 2));
         mRv.setItemAnimator(new DefaultItemAnimator());
         adapter = new MovieRecycleViewAdapter();
         mRv.setAdapter(adapter);
-
-        mTvError = view.findViewById(R.id.tv_main_error);
-
-
-        updateDataByPop();
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        int sortIndex = SharePreferenceUtils.getIntSharePreference(activity);
+        switch (sortIndex) {
+            case 0:
+            case 1:
+                updateDataByPop();
+                updateDataByPop();
+                break;
+            case 2:
+                updateDataByVoteAverage();
+                break;
+            case 3:
+                updateDataByFavorite();
+                break;
+            default:
+                updateDataByPop();
+                break;
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList("movie", (ArrayList<? extends Parcelable>) list);
     }
 
     public void updateDataByPop(){
@@ -112,7 +143,7 @@ public class MainFragment extends Fragment implements MovieHttpResponseInterface
     public void updateDataByFavorite(){
         Uri uri = MovieContract.MovieEntry.getContentUri();
         Cursor cursor = getActivity().getContentResolver().query(uri, MAIN_FORECAST_PROJECTION, null, null, null);
-        List<MoviesModel> list = new ArrayList<>();
+        List<MoviesModel> contentList = new ArrayList<>();
         for (int i = 0; i< cursor.getCount(); i++) {
             cursor.moveToPosition(i);
             MoviesModel moviesModel = new MoviesModel();
@@ -128,11 +159,14 @@ public class MainFragment extends Fragment implements MovieHttpResponseInterface
             moviesModel.setOverview(cursor.getString(INDEX_COLUMN_OVERVIEW));
             moviesModel.setRelease_date(cursor.getString(INDEX_COLUMN_RELEASE_DATE));
             moviesModel.setVote_count(cursor.getInt(INDEX_COLUMN_VOTE_COUNT));
-            list.add(moviesModel);
+            contentList.add(moviesModel);
         }
-        this.list.clear();
-        this.list.addAll(list);
-        adapter.notifyDataSetChanged();
+//        list.clear();
+//        list.addAll(contentList);
+        Message message = new Message();
+        message.what = 1;
+        message.obj = contentList;
+        mHandler.sendMessage(message);
     }
 
     public static final String[] MAIN_FORECAST_PROJECTION = {

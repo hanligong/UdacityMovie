@@ -3,6 +3,8 @@ package com.udacitymovie.action.activity;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,6 +28,7 @@ import com.bluelinelabs.logansquare.LoganSquare;
 import com.squareup.picasso.Picasso;
 import com.udacitymovie.action.R;
 import com.udacitymovie.action.contentProvider.MovieContract;
+import com.udacitymovie.action.fragment.MainFragment;
 import com.udacitymovie.action.inter.MovieHttpResponseInterface;
 import com.udacitymovie.action.inter.MovieTrailerResponseInterface;
 import com.udacitymovie.action.model.MoviesModel;
@@ -54,6 +57,12 @@ public class MovieDetailActivity extends BaseActivity implements MovieHttpRespon
     TextView mTvName;
     @BindView(R.id.iv_detail_post)
     ImageView mIvPost;
+
+    @BindView(R.id.detailMarkIv)
+    ImageView mMarkIv;
+    @BindView(R.id.detailMarkTv)
+    TextView mMarkTv;
+
     @BindView(R.id.tv_detail_desc)
     TextView mTvDesc;
     @BindView(R.id.tv_detail_date)
@@ -65,6 +74,9 @@ public class MovieDetailActivity extends BaseActivity implements MovieHttpRespon
 
     @BindView(R.id.detailRv)
     RecyclerView mRv;
+
+    @BindView(R.id.trailerTv)
+    TextView mTrailerTv;
 
     private TrailerAdapter mTrailerAdapter;
     private List<VideoModel> list;
@@ -85,6 +97,9 @@ public class MovieDetailActivity extends BaseActivity implements MovieHttpRespon
                     list.addAll(videoModels);
                     mTrailerAdapter.notifyDataSetChanged();
                     break;
+                case 3:
+                    String content = (String) msg.obj;
+                    mTrailerTv.setText(content);
             }
         }
     };
@@ -120,13 +135,44 @@ public class MovieDetailActivity extends BaseActivity implements MovieHttpRespon
         mTrailerAdapter = new TrailerAdapter();
         mRv.setAdapter(mTrailerAdapter);
 
-
         //TODO 请求接口
         // https://api.themoviedb.org/3/movie/{movie_id}/videos?api_key=<<api_key>>&language=en-US
         // https://api.themoviedb.org/3/movie/{movie_id}/reviews?api_key=<<api_key>>&language=en-US&page=1
         OkHttpUtils.requestHttp(this, NetworkUtils.MOVIE_BASE_URL + moviesModel.getId() + "/videos?api_key=", this);
 
         OkHttpUtils.requestHttp(MovieDetailActivity.this, NetworkUtils.MOVIE_BASE_URL + moviesModel.getId() + "/reviews?api_key=", "&page=1", MovieDetailActivity.this);
+
+        refreshMarkStatus();
+    }
+
+    private void refreshMarkStatus(){
+        Uri uri = MovieContract.MovieEntry.getContentUri();
+        Cursor cursor = getContentResolver()
+                .query(uri,
+                        MainFragment.MAIN_FORECAST_PROJECTION,
+                        MovieContract.MovieEntry.COLUMN_POSTER_PATH + " = ? ",
+                        new String[] { moviesModel.getPoster_path()},
+                        null);
+        if (null != cursor && cursor.getCount()> 0) {
+            mMarkIv.setVisibility(View.GONE);
+            mMarkTv.setVisibility(View.VISIBLE);
+        } else {
+            mMarkIv.setVisibility(View.VISIBLE);
+            mMarkTv.setVisibility(View.GONE);
+        }
+    }
+
+    @OnClick(R.id.detailMarkTv)
+    void clickCancleMark() {
+        Uri uri = MovieContract.MovieEntry.getContentUri();
+        int row = getContentResolver().delete(uri, MovieContract.MovieEntry.COLUMN_POSTER_PATH + " = ?", new String[]{moviesModel.getPoster_path()});
+        Log.e("MovieDetailActivity","delete" + row + "");
+        if (row > 0) {
+            Toast.makeText(this, "取消收藏成功", Toast.LENGTH_SHORT).show();
+            refreshMarkStatus();
+        } else {
+            Toast.makeText(this, "取消收藏失败", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @OnClick(R.id.detailMarkIv)
@@ -147,8 +193,13 @@ public class MovieDetailActivity extends BaseActivity implements MovieHttpRespon
         contentValues.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, moviesModel.getOverview());
         contentValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, moviesModel.getRelease_date());
         values.add(contentValues);
-        int c = getContentResolver().bulkInsert(MovieContract.MovieEntry.getContentUri(), values.toArray(new ContentValues[1]));
-        Log.e("MovieDetailActivity", c + "");
+        int row = getContentResolver().bulkInsert(MovieContract.MovieEntry.getContentUri(), values.toArray(new ContentValues[1]));
+        if (row > 0) {
+            Toast.makeText(this, "收藏成功", Toast.LENGTH_SHORT).show();
+            refreshMarkStatus();
+        } else {
+            Toast.makeText(this, "收藏失败", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -183,7 +234,10 @@ public class MovieDetailActivity extends BaseActivity implements MovieHttpRespon
             return;
         }
 
-        trailerUrl = trailerModel.get(0).getUrl();
+        Message message = new Message();
+        message.what = 3;
+        message.obj = trailerModel.get(0).getContent();
+        handler.sendMessage(message);
     }
 
     @Override
@@ -220,15 +274,12 @@ public class MovieDetailActivity extends BaseActivity implements MovieHttpRespon
             holder.mCl.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Log.d("", NetworkUtils.MOVIE_BASE_URL + moviesModel.getId() + "/reviews?api_key=");
-                    if (TextUtils.isEmpty(trailerUrl)) {
-                        return;
-                    }
-                    Intent intent= new Intent();
-                    intent.setAction("android.intent.action.VIEW");
-                    Uri content_url = Uri.parse(trailerUrl);
-                    intent.setData(content_url);
-                    startActivity(intent);
+
+//                    Intent intent= new Intent();
+//                    intent.setAction("android.intent.action.VIEW");
+//                    Uri content_url = Uri.parse(trailerUrl);
+//                    intent.setData(content_url);
+//                    startActivity(intent);
                 }
             });
         }

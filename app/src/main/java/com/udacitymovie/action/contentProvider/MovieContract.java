@@ -16,7 +16,13 @@ public class MovieContract {
     public static class MovieEntry implements BaseColumns {
 
         public static Uri getContentUri(){
-            return BASE_URI.buildUpon().appendPath(TABLE_NAME).build();
+            return BASE_URI.buildUpon().appendPath(PATH_MOVIE).build();
+        }
+
+        public static Uri getContentUriById(String path){
+            return getContentUri().buildUpon()
+                    .appendPath(path)
+                    .build();
         }
 
         public static final String AUTHOR = "com.udacitymovie.action";

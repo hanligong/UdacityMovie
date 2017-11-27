@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import com.udacitymovie.action.R;
 import com.udacitymovie.action.fragment.MainFragment;
+import com.udacitymovie.action.uitls.SharePreferenceUtils;
 
 public class MainActivity extends BaseActivity {
 
@@ -37,17 +38,22 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        int i = 0;
         switch (item.getItemId()) {
             case R.id.menu_popularity_level:
+                i = 1;
                 fragment.updateDataByPop();
                 break;
             case R.id.menu_score:
+                i = 2;
                 fragment.updateDataByVoteAverage();
                 break;
             case R.id.menu_favorite:
+                i = 3;
                 fragment.updateDataByFavorite();
                 break;
         }
+        SharePreferenceUtils.saveIntSharePreference(this, i);
         return super.onOptionsItemSelected(item);
     }
 

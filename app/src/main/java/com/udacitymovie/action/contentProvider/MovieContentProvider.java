@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 /**
  * Created by hanyuezi on 17/11/21.
@@ -20,12 +21,15 @@ public class MovieContentProvider extends ContentProvider{
 
     public static final int CODE_MOVIE = 100;
 
+    public static final int CODE_MOVIE_BY_ID = 101;
+
     private static final UriMatcher sUriMatcher = buildUriMatcher();
 
     public static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = MovieContract.MovieEntry.AUTHOR;
         matcher.addURI(authority, MovieContract.PATH_MOVIE, CODE_MOVIE);
+        matcher.addURI(authority, MovieContract.PATH_MOVIE + "/#", CODE_MOVIE_BY_ID);
         return matcher;
     }
 
@@ -42,7 +46,10 @@ public class MovieContentProvider extends ContentProvider{
         Cursor cursor = null;
         switch (sUriMatcher.match(uri)) {
             case CODE_MOVIE:
-                cursor = sqLiteDatabase.query(MovieContract.MovieEntry.TABLE_NAME, strings, s, strings1,s1, null, null);
+                cursor = sqLiteDatabase.query(MovieContract.MovieEntry.TABLE_NAME, strings, s, strings1, s1, null, null);
+                break;
+            case CODE_MOVIE_BY_ID:
+                cursor = sqLiteDatabase.query(MovieContract.MovieEntry.TABLE_NAME, strings, s, strings1, s1, null, null);
                 break;
         }
         if (null != cursor) {
@@ -93,6 +100,25 @@ public class MovieContentProvider extends ContentProvider{
 
     @Override
     public int delete(@NonNull Uri uri, @Nullable String s, @Nullable String[] strings) {
+        Log.e("", "-------delete-------" + strings[0]);
+        SQLiteDatabase sqLiteDatabase = movieDbHelper.getWritableDatabase();
+        switch (sUriMatcher.match(uri)) {
+            case CODE_MOVIE:
+                sqLiteDatabase.beginTransaction();
+                int rowsInserted = 0;
+                try {
+                    rowsInserted = sqLiteDatabase.delete(MovieContract.MovieEntry.TABLE_NAME, s, strings);
+                    sqLiteDatabase.setTransactionSuccessful();
+                } finally {
+                    sqLiteDatabase.endTransaction();
+                }
+
+                if (rowsInserted > 0) {
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
+
+                return rowsInserted;
+        }
         return 0;
     }
 
