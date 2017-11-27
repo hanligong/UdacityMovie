@@ -1,5 +1,6 @@
 package com.udacitymovie.action.activity;
 
+import android.content.ActivityNotFoundException;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -274,12 +275,14 @@ public class MovieDetailActivity extends BaseActivity implements MovieHttpRespon
             holder.mCl.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
-//                    Intent intent= new Intent();
-//                    intent.setAction("android.intent.action.VIEW");
-//                    Uri content_url = Uri.parse(trailerUrl);
-//                    intent.setData(content_url);
-//                    startActivity(intent);
+                    Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + list.get(0).getKey()));
+                    Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("http://www.youtube.com/watch?v=" + list.get(0).getKey()));
+                    try {
+                        startActivity(appIntent);
+                    } catch (ActivityNotFoundException ex) {
+                        startActivity(webIntent);
+                    }
                 }
             });
         }
