@@ -235,9 +235,14 @@ public class MovieDetailActivity extends BaseActivity implements MovieHttpRespon
             return;
         }
 
+        String contents = "";
+        for (int i = 0;i < trailerModel.size();i++) {
+            contents  = contents + trailerModel.get(i).getContent() + "\n";
+        }
+        Log.e("detail", contents);
         Message message = new Message();
         message.what = 3;
-        message.obj = trailerModel.get(0).getContent();
+        message.obj = contents;
         handler.sendMessage(message);
     }
 

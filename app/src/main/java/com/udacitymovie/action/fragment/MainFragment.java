@@ -38,6 +38,7 @@ import com.udacitymovie.action.uitls.SharePreferenceUtils;
 import com.udacitymovie.action.uitls.Util;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import com.udacitymovie.action.activity.MainActivity;
 
@@ -48,7 +49,7 @@ public class MainFragment extends Fragment implements MovieHttpResponseInterface
     private MainActivity activity;
 
     private RecyclerView mRv;
-    private List<MoviesModel> list;
+    private ArrayList<MoviesModel> list;
     private MovieRecycleViewAdapter adapter;
 
     private TextView mTvError;
@@ -89,44 +90,44 @@ public class MainFragment extends Fragment implements MovieHttpResponseInterface
 
         mTvError = view.findViewById(R.id.tv_main_error);
 
-        if (null != savedInstanceState) {
-            list = savedInstanceState.getParcelableArrayList("movie");
-        }
-
         mRv = view.findViewById(R.id.rv_main);
         mRv.setLayoutManager(new GridLayoutManager(activity, 2));
         mRv.setItemAnimator(new DefaultItemAnimator());
         adapter = new MovieRecycleViewAdapter();
         mRv.setAdapter(adapter);
-        return view;
-    }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        int sortIndex = SharePreferenceUtils.getIntSharePreference(activity);
-        switch (sortIndex) {
-            case 0:
-            case 1:
-                updateDataByPop();
-                updateDataByPop();
-                break;
-            case 2:
-                updateDataByVoteAverage();
-                break;
-            case 3:
-                updateDataByFavorite();
-                break;
-            default:
-                updateDataByPop();
-                break;
+        if (null != savedInstanceState) {
+            ArrayList arrayList = savedInstanceState.getParcelableArrayList("movie");
+            Message message = new Message();
+            message.what = 1;
+            message.obj = arrayList;
+            mHandler.sendMessage(message);
+        } else {
+            int sortIndex = SharePreferenceUtils.getIntSharePreference(activity);
+            switch (sortIndex) {
+                case 0:
+                case 1:
+                    updateDataByPop();
+                    updateDataByPop();
+                    break;
+                case 2:
+                    updateDataByVoteAverage();
+                    break;
+                case 3:
+                    updateDataByFavorite();
+                    break;
+                default:
+                    updateDataByPop();
+                    break;
+            }
         }
+        return view;
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList("movie", (ArrayList<? extends Parcelable>) list);
+        outState.putParcelableArrayList("movie", list);
     }
 
     public void updateDataByPop(){

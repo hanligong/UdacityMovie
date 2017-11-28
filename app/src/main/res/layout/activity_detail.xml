@@ -149,7 +149,7 @@
             android:layout_marginLeft="20dp"
             android:layout_marginTop="10dp"
             android:textSize="18sp"
-            android:text="Trailers"/>
+            android:text="Reviews"/>
 
         <TextView
             android:id="@+id/trailerTv"
